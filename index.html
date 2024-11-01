@@ -362,6 +362,11 @@
     }
 
     function jogar(celula, botao) {
+        if (currentMode === 'local') {
+            alert("Local mode is not supported for online play.");
+            return;
+        }
+
         if (playerAtual !== currentPlayer) {
             alert("It's not your turn!");
             return;
