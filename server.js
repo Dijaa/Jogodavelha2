@@ -14,6 +14,11 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/invite/:roomId', (req, res) => {
+  const roomId = req.params.roomId;
+  res.redirect(`/?roomId=${roomId}`);
+});
+
 io.on('connection', (socket) => {
   console.log('A user connected');
 

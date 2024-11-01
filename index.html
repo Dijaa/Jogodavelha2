@@ -417,13 +417,12 @@
         }
 
         function createRoom() {
-            const roomId = document.getElementById("room-id").value;
-            if (roomId) {
-                socket.emit('createRoom', roomId);
-                currentRoomId = roomId;
-                document.getElementById("room-selection").style.display = "none";
-                document.getElementById("game-board").style.display = "block";
-            }
+            const roomId = generateRoomId();
+            socket.emit('createRoom', roomId);
+            currentRoomId = roomId;
+            document.getElementById("room-selection").style.display = "none";
+            document.getElementById("game-board").style.display = "block";
+            displayRoomLink(roomId);
         }
 
         function joinRoom() {
@@ -436,6 +435,17 @@
             }
         }
 
+        function generateRoomId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function displayRoomLink(roomId) {
+            const roomLink = `${window.location.origin}/invite/${roomId}`;
+            const roomLinkElement = document.createElement('div');
+            roomLinkElement.innerHTML = `Room created! Share this link to invite others: <a href="${roomLink}">${roomLink}</a>`;
+            document.body.appendChild(roomLinkElement);
+        }
+
         socket.on('roomJoined', (roomId) => {
             console.log(`Joined room ${roomId}`);
         });
@@ -443,6 +453,13 @@
         socket.on('roomFull', (roomId) => {
             alert(`Room ${roomId} is full. Please try another room.`);
         });
+
+        // Check if there's a roomId in the URL and join the room automatically
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomIdFromUrl = urlParams.get('roomId');
+        if (roomIdFromUrl) {
+            joinRoom(roomIdFromUrl);
+        }
     </script>
 </body>
 </html>
