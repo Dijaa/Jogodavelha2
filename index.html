@@ -316,6 +316,11 @@
     }
 
     function jogar(celula, botao) {
+        if (playerAtual !== currentPlayer) {
+            alert("It's not your turn!");
+            return;
+        }
+
         console.log("jogou a celula " + celula + " e o botão " + botao);
         document.getElementById("cell" + celula + "bt" + botao).disabled = true;
         document.getElementById("cell" + celula + "bt" + botao).innerText = playerAtual;
@@ -335,6 +340,7 @@
 
     let currentMode = null;
     let currentRoomId = null;
+    let currentPlayer = null;
 
     function selectMode(mode) {
         currentMode = mode;
@@ -365,6 +371,12 @@
 
     socket.on('roomJoined', (roomId) => {
         console.log(`Joined room ${roomId}`);
+        if (!currentPlayer) {
+            currentPlayer = 'X';
+        } else {
+            currentPlayer = 'O';
+        }
+        document.getElementById("playershow").textContent = currentPlayer;
     });
 
     socket.on('roomFull', (roomId) => {
