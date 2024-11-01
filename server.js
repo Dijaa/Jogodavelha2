@@ -47,12 +47,19 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('playerMove', { celula, botao, playerAtual });
   });
 
+  socket.on('gameWon', (data) => {
+    const { roomId, winner, loser } = data;
+    socket.to(roomId).emit('gameWon', { winner, loser });
+  });
+
   socket.on('disconnect', () => {
     console.log('A user disconnected');
     for (const roomId in rooms) {
       rooms[roomId] = rooms[roomId].filter((id) => id !== socket.id);
       if (rooms[roomId].length === 0) {
         delete rooms[roomId];
+      } else {
+        socket.to(roomId).emit('playerLeft');
       }
     }
   });
