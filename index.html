@@ -207,138 +207,177 @@
     <div id="painel">
        <h1>VEZ DO </h1> <span id="playershow"></span>
     </div>
+
+    <div>
+        <input type="text" id="roomId" placeholder="Room ID">
+        <button onclick="createRoom()">Create Room</button>
+        <button onclick="joinRoom()">Join Room</button>
+    </div>
+
+    <div>
+        <button onclick="setMode('local')">Local Mode</button>
+        <button onclick="setMode('online')">Online Mode</button>
+    </div>
 </body>
+<script src="/socket.io/socket.io.js"></script>
 <script>
+    const socket = io();
 
     let playerAtual = "X"
     document.getElementById("playershow").textContent = playerAtual;
 
-var matrizJogos = [
-  ["", "", ""],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
-];
-var matrizGeral = ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"];
+    var matrizJogos = [
+        ["", "", ""],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+        ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    ];
+    var matrizGeral = ["", "#", "#", "#", "#", "#", "#", "#", "#", "#"];
 
-function ganhouCelula(celula) {
+    function ganhouCelula(celula) {
+        if(matrizJogos[celula][1] != "#" && matrizJogos[celula][2] != "#" && matrizJogos[celula][3] != "#" && matrizJogos[celula][4] != "#" && matrizJogos[celula][5] != "#"&& matrizJogos[celula][6] != "#" && matrizJogos[celula][7] != "#" && matrizJogos[celula][8] != "#" && matrizJogos[celula][9] != "#"){
+            console.log("empatou")
+            desbloquearCelulas(celula);
+            padraoBlockCelulas[celula] = "visible";
+            matrizGeral[celula] = "";
+            desbloquearCelulas(celula);
+        }
 
+        if (
+            (matrizJogos[celula][1] == playerAtual && matrizJogos[celula][2] == playerAtual && matrizJogos[celula][3] == playerAtual) ||
+            (matrizJogos[celula][4] == playerAtual && matrizJogos[celula][5] == playerAtual && matrizJogos[celula][6] == playerAtual) ||
+            (matrizJogos[celula][7] == playerAtual && matrizJogos[celula][8] == playerAtual && matrizJogos[celula][9] == playerAtual) ||
+            (matrizJogos[celula][1] == playerAtual && matrizJogos[celula][4] == playerAtual && matrizJogos[celula][7] == playerAtual) ||
+            (matrizJogos[celula][2] == playerAtual && matrizJogos[celula][5] == playerAtual && matrizJogos[celula][8] == playerAtual) ||
+            (matrizJogos[celula][3] == playerAtual && matrizJogos[celula][6] == playerAtual && matrizJogos[celula][9] == playerAtual) ||
+            (matrizJogos[celula][1] == playerAtual && matrizJogos[celula][5] == playerAtual && matrizJogos[celula][9] == playerAtual) ||
+            (matrizJogos[celula][3] == playerAtual && matrizJogos[celula][5] == playerAtual && matrizJogos[celula][7] == playerAtual)
+        ) {
+            console.log("Ganhou " + playerAtual + " na célula " + celula);
+            bloquearBotoes(celula);
+            padraoBlockCelulas[celula] = "visible";
+            matrizGeral[celula] = playerAtual;
+            desbloquearCelulas(celula);
+            document.getElementById("sombraCell" + celula).src = "img/" + playerAtual + ".png";
+        }
 
-    if(matrizJogos[celula][1] != "#" && matrizJogos[celula][2] != "#" && matrizJogos[celula][3] != "#" && matrizJogos[celula][4] != "#" && matrizJogos[celula][5] != "#"&& matrizJogos[celula][6] != "#" && matrizJogos[celula][7] != "#" && matrizJogos[celula][8] != "#" && matrizJogos[celula][9] != "#"){
-    console.log("empatou")
-    desbloquearCelulas(celula);
-    padraoBlockCelulas[celula] = "visible";
-    matrizGeral[celula] = "";
-    desbloquearCelulas(celula);
-  }
-
-
-  if (
-    (matrizJogos[celula][1] == playerAtual && matrizJogos[celula][2] == playerAtual && matrizJogos[celula][3] == playerAtual) ||
-    (matrizJogos[celula][4] == playerAtual && matrizJogos[celula][5] == playerAtual && matrizJogos[celula][6] == playerAtual) ||
-    (matrizJogos[celula][7] == playerAtual && matrizJogos[celula][8] == playerAtual && matrizJogos[celula][9] == playerAtual) ||
-    (matrizJogos[celula][1] == playerAtual && matrizJogos[celula][4] == playerAtual && matrizJogos[celula][7] == playerAtual) ||
-    (matrizJogos[celula][2] == playerAtual && matrizJogos[celula][5] == playerAtual && matrizJogos[celula][8] == playerAtual) ||
-    (matrizJogos[celula][3] == playerAtual && matrizJogos[celula][6] == playerAtual && matrizJogos[celula][9] == playerAtual) ||
-    (matrizJogos[celula][1] == playerAtual && matrizJogos[celula][5] == playerAtual && matrizJogos[celula][9] == playerAtual) ||
-    (matrizJogos[celula][3] == playerAtual && matrizJogos[celula][5] == playerAtual && matrizJogos[celula][7] == playerAtual)
-  ) {
-    console.log("Ganhou " + playerAtual + " na célula " + celula);
-    bloquearBotoes(celula);
-    //desbloquearCelulas(celula);
-    padraoBlockCelulas[celula] = "visible";
-    matrizGeral[celula] = playerAtual;
-    desbloquearCelulas(celula);
-    document.getElementById("sombraCell" + celula).src = "img/" + playerAtual + ".png";
-
-
-  }
-  if (
-    (matrizGeral[1] == playerAtual && matrizGeral[2] == playerAtual && matrizGeral[3] == playerAtual) ||
-    (matrizGeral[4] == playerAtual && matrizGeral[5] == playerAtual && matrizGeral[6] == playerAtual) ||
-    (matrizGeral[7] == playerAtual && matrizGeral[8] == playerAtual && matrizGeral[9] == playerAtual) ||
-    (matrizGeral[1] == playerAtual && matrizGeral[4] == playerAtual && matrizGeral[7] == playerAtual) ||
-    (matrizGeral[2] == playerAtual && matrizGeral[5] == playerAtual && matrizGeral[8] == playerAtual) ||
-    (matrizGeral[3] == playerAtual && matrizGeral[6] == playerAtual && matrizGeral[9] == playerAtual) ||
-    (matrizGeral[1] == playerAtual && matrizGeral[5] == playerAtual && matrizGeral[9] == playerAtual) ||
-    (matrizGeral[3] == playerAtual && matrizGeral[5] == playerAtual && matrizGeral[7] == playerAtual)
-  ) {
-
-    alert("O "+playerAtual+" GANHOU!!!!")
-    
-  }
-
-}
-
-var padraoBlockCelulas = ["", "hidden","hidden","hidden","hidden","hidden","hidden","hidden","hidden","hidden"];
-
-function desbloquearCelulas(celula){
-    for (let j = 1; j <= 9; j++) {
-    document.getElementById("sombraCell"+j).style.visibility=padraoBlockCelulas[j];
-    console.log("desbloqueou celula"+ celula)
+        if (
+            (matrizGeral[1] == playerAtual && matrizGeral[2] == playerAtual && matrizGeral[3] == playerAtual) ||
+            (matrizGeral[4] == playerAtual && matrizGeral[5] == playerAtual && matrizGeral[6] == playerAtual) ||
+            (matrizGeral[7] == playerAtual && matrizGeral[8] == playerAtual && matrizGeral[9] == playerAtual) ||
+            (matrizGeral[1] == playerAtual && matrizGeral[4] == playerAtual && matrizGeral[7] == playerAtual) ||
+            (matrizGeral[2] == playerAtual && matrizGeral[5] == playerAtual && matrizGeral[8] == playerAtual) ||
+            (matrizGeral[3] == playerAtual && matrizGeral[6] == playerAtual && matrizGeral[9] == playerAtual) ||
+            (matrizGeral[1] == playerAtual && matrizGeral[5] == playerAtual && matrizGeral[9] == playerAtual) ||
+            (matrizGeral[3] == playerAtual && matrizGeral[5] == playerAtual && matrizGeral[7] == playerAtual)
+        ) {
+            alert("O "+playerAtual+" GANHOU!!!!")
+        }
     }
-}
 
+    var padraoBlockCelulas = ["", "hidden","hidden","hidden","hidden","hidden","hidden","hidden","hidden","hidden"];
 
-function bloquearBotoes(celula) {
-  for (let i = 1; i <= 9; i++) {
-    const button = document.getElementById("cell" + celula + "bt" + i);
-    button.disabled = true;
-    if (button.innerHTML === playerAtual) {
-      button.style.color = "green";
+    function desbloquearCelulas(celula){
+        for (let j = 1; j <= 9; j++) {
+            document.getElementById("sombraCell"+j).style.visibility=padraoBlockCelulas[j];
+            console.log("desbloqueou celula"+ celula)
+        }
     }
-  
-  }
 
-}
-
-
-
-function bloquearCelulas(celula){
-//sombraCell1
-if(padraoBlockCelulas[celula] == "visible"){
-return desbloquearCelulas(celula);
-}
-
-
-for (let i = 1; i <= 9; i++) {
-    document.getElementById("sombraCell"+i).style.visibility="visible";
-  }
-  //bloqueou tudo
-   if(padraoBlockCelulas[celula] == "hidden"){
-    document.getElementById("sombraCell"+celula).style.visibility="hidden";
-   }
-   //vrificar se o que eu joguei esta com desbloqueio, se sim ele desbloqueia, se não ele desbloqueia tudo que esteja com hidden
-   else{
-    for (let j = 1; j <= 9; j++) {
-    document.getElementById("sombraCell"+celula).style.visibility=padraoBlockCelulas[j];
+    function bloquearBotoes(celula) {
+        for (let i = 1; i <= 9; i++) {
+            const button = document.getElementById("cell" + celula + "bt" + i);
+            button.disabled = true;
+            if (button.innerHTML === playerAtual) {
+                button.style.color = "green";
+            }
+        }
     }
-   }
 
-}
+    function bloquearCelulas(celula){
+        if(padraoBlockCelulas[celula] == "visible"){
+            return desbloquearCelulas(celula);
+        }
 
+        for (let i = 1; i <= 9; i++) {
+            document.getElementById("sombraCell"+i).style.visibility="visible";
+        }
+        if(padraoBlockCelulas[celula] == "hidden"){
+            document.getElementById("sombraCell"+celula).style.visibility="hidden";
+        } else {
+            for (let j = 1; j <= 9; j++) {
+                document.getElementById("sombraCell"+celula).style.visibility=padraoBlockCelulas[j];
+            }
+        }
+    }
 
     function jogar(celula,botão){
-       console.log("jogou a celula "+ celula+" e o botão "+botão)
-      document.getElementById("cell"+celula+"bt"+botão).disabled = true;
-      document.getElementById("cell"+celula+"bt"+botão).innerText = playerAtual;
-      matrizJogos[celula][botão] = playerAtual;
-console.log(matrizJogos[celula][botão]);
+        console.log("jogou a celula "+ celula+" e o botão "+botão)
+        document.getElementById("cell"+celula+"bt"+botão).disabled = true;
+        document.getElementById("cell"+celula+"bt"+botão).innerText = playerAtual;
+        matrizJogos[celula][botão] = playerAtual;
+        console.log(matrizJogos[celula][botão]);
 
-bloquearCelulas(botão);
-ganhouCelula(celula);
+        bloquearCelulas(botão);
+        ganhouCelula(celula);
 
-playerAtual = playerAtual === 'X' ? 'O' : 'X';
-document.getElementById("playershow").textContent = playerAtual;
+        playerAtual = playerAtual === 'X' ? 'O' : 'X';
+        document.getElementById("playershow").textContent = playerAtual;
+
+        if (currentMode === 'online') {
+            socket.emit('playerMove', { roomId: currentRoomId, celula, botao: botão, playerAtual });
+        }
     }
 
+    socket.on('playerMove', (data) => {
+        const { celula, botao, playerAtual } = data;
+        document.getElementById("cell"+celula+"bt"+botao).disabled = true;
+        document.getElementById("cell"+celula+"bt"+botao).innerText = playerAtual;
+        matrizJogos[celula][botao] = playerAtual;
+        bloquearCelulas(botao);
+        ganhouCelula(celula);
+        document.getElementById("playershow").textContent = playerAtual === 'X' ? 'O' : 'X';
+    });
 
+    let currentRoomId = null;
+    let currentMode = 'local';
 
+    function createRoom() {
+        const roomId = document.getElementById("roomId").value;
+        socket.emit('createRoom', roomId);
+    }
+
+    function joinRoom() {
+        const roomId = document.getElementById("roomId").value;
+        socket.emit('joinRoom', roomId);
+    }
+
+    socket.on('roomJoined', (roomId) => {
+        currentRoomId = roomId;
+        console.log(`Joined room ${roomId}`);
+    });
+
+    socket.on('roomFull', (roomId) => {
+        alert(`Room ${roomId} is full`);
+    });
+
+    function setMode(mode) {
+        currentMode = mode;
+        if (mode === 'local') {
+            document.getElementById('roomId').style.display = 'none';
+            document.querySelector('button[onclick="createRoom()"]').style.display = 'none';
+            document.querySelector('button[onclick="joinRoom()"]').style.display = 'none';
+        } else {
+            document.getElementById('roomId').style.display = 'inline';
+            document.querySelector('button[onclick="createRoom()"]').style.display = 'inline';
+            document.querySelector('button[onclick="joinRoom()"]').style.display = 'inline';
+        }
+    }
 </script>
 </html>
